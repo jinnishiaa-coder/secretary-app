@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>秘書アプリ</title>
+<style>
+  :root {
+    --bg:#eef1f6;
+    --card:#ffffff;
+    --item:#f7f8fb;
+    --item-border:#e6e9f0;
+    --item-hover:#eef1f8;
+    --text:#1c2230;
+    --muted:#6b7280;
+    --line:#e4e7ee;
+    --accent:#4361ee;
+    --accent-dark:#3450d6;
+    --accent-soft:#eef1ff;
+    --danger:#e5484d;
+    --danger-soft:#fdecec;
+    --ok:#1a9e6a;
+    --ok-soft:#e4f7ee;
+    --warn-soft:#fff4e0;
+    --warn-text:#92600a;
+    --shadow: 0 1px 2px rgba(20,24,40,.04), 0 6px 20px rgba(20,24,40,.06);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin:0;
+    background:
+      radial-gradient(1200px 500px at 10% -10%, #f4f6fb 0%, transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family: -apple-system, "SF Pro JP", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  header {
+    background:var(--card);
+    border-bottom:1px solid var(--line);
+    padding:18px 28px;
+    display:flex; align-items:center; gap:10px;
+    position:sticky; top:0; z-index:10;
+  }
+  header .dot {
+    width:10px; height:10px; border-radius:50%;
+    background:linear-gradient(135deg, var(--accent), #7c8cff);
+    box-shadow:0 0 0 4px var(--accent-soft);
+  }
+  h1 { margin:0; font-size:18px; font-weight:700; letter-spacing:.01em; }
+  main { max-width:1120px; margin:0 auto; padding:28px 20px 60px; }
+
+  .dashboard { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:28px; }
+  .stat {
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:18px 20px;
+    box-shadow:var(--shadow);
+    position:relative;
+    overflow:hidden;
+  }
+  .stat::before {
+    content:'';
+    position:absolute; inset:0 auto 0 0; width:4px;
+    background:linear-gradient(180deg, var(--accent), #7c8cff);
+  }
+  .stat .label { color:var(--muted); font-size:12.5px; font-weight:600; letter-spacing:.02em; }
+  .stat .num { font-size:30px; font-weight:800; margin-top:6px; letter-spacing:-.02em; }
+  .stat.warn::before { background:linear-gradient(180deg, #f3a712, #f7c948); }
+
+  .columns { display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start; }
+  section {
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:22px;
+    margin-bottom:24px;
+    box-shadow:var(--shadow);
+  }
+  h2 {
+    margin:0 0 16px;
+    font-size:14.5px;
+    font-weight:700;
+    color:var(--text);
+    display:flex; align-items:center; gap:8px;
+  }
+  h2::before {
+    content:'';
+    width:5px; height:14px; border-radius:3px;
+    background:var(--accent);
+    display:inline-block;
+  }
+
+  label.field-label { display:block; font-size:12px; font-weight:600; color:var(--muted); margin:0 0 6px 2px; }
+
+  input, textarea {
+    width:100%;
+    padding:11px 13px;
+    border:1px solid var(--line);
+    border-radius:9px;
+    font:inherit;
+    font-size:14px;
+    margin-bottom:10px;
+    background:var(--item);
+    color:var(--text);
+    transition:border-color .15s ease, box-shadow .15s ease, background .15s ease;
+  }
+  input::placeholder, textarea::placeholder { color:#9aa1b0; }
+  input:focus, textarea:focus {
+    outline:none;
+    border-color:var(--accent);
+    background:var(--card);
+    box-shadow:0 0 0 3px var(--accent-soft);
+  }
+  textarea { min-height:96px; resize:vertical; }
+
+  button {
+    background:var(--accent);
+    color:#fff;
+    border:0;
+    border-radius:9px;
+    padding:10px 18px;
+    font:inherit;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    transition:background .15s ease, transform .05s ease, box-shadow .15s ease;
+    box-shadow:0 2px 6px rgba(67,97,238,.25);
+  }
+  button:hover { background:var(--accent-dark); }
+  button:active { transform:translateY(1px); }
+  button.small { padding:7px 13px; font-size:12.5px; box-shadow:none; }
+  button.danger { background:var(--danger-soft); color:var(--danger); box-shadow:none; }
+  button.danger:hover { background:#fbdcdc; }
+  button.secondary { background:var(--item); color:var(--text); border:1px solid var(--item-border); box-shadow:none; }
+  button.secondary:hover { background:var(--item-hover); }
+
+  ul { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:10px; }
+  li {
+    background:var(--item);
+    border:1px solid var(--item-border);
+    border-radius:11px;
+    padding:14px 16px;
+    transition:background .15s ease, border-color .15s ease;
+  }
+  li:hover { background:var(--item-hover); }
+
+  .memo-title { font-weight:700; font-size:14.5px; }
+  .memo-body { white-space:pre-wrap; margin:8px 0 0; color:#3a4150; font-size:13.5px; line-height:1.6; }
+  .meta { color:var(--muted); font-size:11.5px; margin-top:8px; }
+
+  .task { display:flex; align-items:center; gap:12px; }
+  .task .info { flex:1; min-width:0; }
+  .task .task-title { font-size:14px; font-weight:600; }
+  .task.done { background:#f4f6f9; }
+  .task.done .task-title { text-decoration:line-through; color:var(--muted); font-weight:500; }
+  .task .actions { display:flex; gap:8px; flex-shrink:0; }
+
+  .badge {
+    display:inline-block; font-size:11px; font-weight:700;
+    padding:3px 9px; border-radius:20px;
+    background:var(--warn-soft); color:var(--warn-text);
+    margin-left:8px; letter-spacing:.01em;
+    vertical-align:middle;
+  }
+  .badge.done { background:var(--ok-soft); color:var(--ok); }
+
+  .empty {
+    color:var(--muted);
+    font-size:13.5px;
+    text-align:center;
+    padding:28px 12px;
+    background:transparent;
+    border:1px dashed var(--item-border);
+    border-radius:11px;
+  }
+
+  .error { color:var(--danger); font-size:12.5px; min-height:16px; margin:-2px 0 6px; }
+  .row { display:flex; gap:8px; }
+  .row input { margin:0; }
+  .row button { white-space:nowrap; }
+
+  @media (max-width:760px) {
+    .columns { grid-template-columns:1fr; }
+    .dashboard { grid-template-columns:1fr; gap:10px; }
+    main { padding:20px 14px 40px; }
+  }
+</style>
+</head>
+<body>
+<header><span class="dot"></span><h1>自分専用の秘書アプリ</h1></header>
+<main>
+  <!-- ダッシュボード -->
+  <div class="dashboard">
+    <div class="stat"><div class="label">メモの件数</div><div class="num" id="memoCount">0</div></div>
+    <div class="stat"><div class="label">タスクの件数</div><div class="num" id="taskCount">0</div></div>
+    <div class="stat warn"><div class="label">未完了タスク</div><div class="num" id="openCount">0</div></div>
+  </div>
+
+  <div class="columns">
+    <div>
+      <!-- メモ追加欄 -->
+      <section>
+        <h2>メモを追加</h2>
+        <form id="memoForm">
+          <input id="memoTitle" placeholder="タイトル" maxlength="100">
+          <textarea id="memoBody" placeholder="本文"></textarea>
+          <div class="error" id="memoError"></div>
+          <button type="submit">メモを追加</button>
+        </form>
+      </section>
+      <!-- メモ一覧 -->
+      <section>
+        <h2>メモ一覧</h2>
+        <ul id="memoList"></ul>
+      </section>
+    </div>
+
+    <div>
+      <!-- タスク追加欄 -->
+      <section>
+        <h2>タスクを追加</h2>
+        <form id="taskForm">
+          <div class="row">
+            <input id="taskTitle" placeholder="やること" maxlength="200">
+            <button type="submit">追加</button>
+          </div>
+          <div class="error" id="taskError"></div>
+        </form>
+      </section>
+      <!-- タスク一覧 -->
+      <section>
+        <h2>タスク一覧</h2>
+        <ul id="taskList"></ul>
+      </section>
+    </div>
+  </div>
+</main>
+
+<script>
+let memos = [];
+let tasks = [];
+
+const $ = (id) => document.getElementById(id);
+const fmt = (iso) => new Date(iso).toLocaleString('ja-JP', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+
+async function api(url, options = {}) {
+  const res = await fetch(url, { headers: { 'Content-Type': 'application/json' }, ...options });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error || 'エラーが発生しました');
+  return json;
+}
+
+function render() {
+  // ダッシュボード
+  $('memoCount').textContent = memos.length;
+  $('taskCount').textContent = tasks.length;
+  $('openCount').textContent = tasks.filter((t) => !t.done).length;
+
+  // メモ一覧
+  $('memoList').innerHTML = memos.length ? memos.map((m) => `
+    <li>
+      <div class="memo-title">${esc(m.title)}</div>
+      ${m.body ? `<div class="memo-body">${esc(m.body)}</div>` : ''}
+      <div class="meta">作成日時: ${fmt(m.createdAt)}</div>
+    </li>`).join('') : '<li class="empty">メモはまだありません</li>';
+
+  // タスク一覧
+  $('taskList').innerHTML = tasks.length ? tasks.map((t) => `
+    <li class="task ${t.done ? 'done' : ''}">
+      <div class="info">
+        <span class="task-title">${esc(t.title)}</span>
+        <span class="badge ${t.done ? 'done' : ''}">${t.done ? '完了' : '未完了'}</span>
+        <div class="meta">作成日時: ${fmt(t.createdAt)}${t.completedAt ? ' ／ 完了日時: ' + fmt(t.completedAt) : ''}</div>
+      </div>
+      <div class="actions">
+        <button class="small ${t.done ? 'secondary' : ''}" onclick="toggleTask('${t.id}')">${t.done ? '未完了に戻す' : '完了にする'}</button>
+        <button class="small danger" onclick="deleteTask('${t.id}')">削除</button>
+      </div>
+    </li>`).join('') : '<li class="empty">タスクはまだありません</li>';
+}
+
+async function load() {
+  [memos, tasks] = await Promise.all([api('/api/memos'), api('/api/tasks')]);
+  render();
+}
+
+$('memoForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  $('memoError').textContent = '';
+  try {
+    const memo = await api('/api/memos', { method: 'POST', body: JSON.stringify({ title: $('memoTitle').value, body: $('memoBody').value }) });
+    memos.unshift(memo);
+    $('memoTitle').value = ''; $('memoBody').value = '';
+    render();
+  } catch (err) { $('memoError').textContent = err.message; }
+});
+
+$('taskForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  $('taskError').textContent = '';
+  try {
+    const task = await api('/api/tasks', { method: 'POST', body: JSON.stringify({ title: $('taskTitle').value }) });
+    tasks.unshift(task);
+    $('taskTitle').value = '';
+    render();
+  } catch (err) { $('taskError').textContent = err.message; }
+});
+
+async function toggleTask(id) {
+  const updated = await api(`/api/tasks/${id}/complete`, { method: 'PATCH' });
+  tasks = tasks.map((t) => (t.id === id ? updated : t));
+  render();
+}
+
+async function deleteTask(id) {
+  await api(`/api/tasks/${id}`, { method: 'DELETE' });
+  tasks = tasks.filter((t) => t.id !== id);
+  render();
+}
+
+load();
+</script>
+</body>
+</html>
